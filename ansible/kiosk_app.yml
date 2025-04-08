@@ -1,0 +1,78 @@
+---
+- name: Deploy Kiosk App to Raspberry Pi
+  hosts: all
+  become: yes
+  vars:
+    username: "username"  # Replace with the actual username
+    app_dir: "/home/{{ username }}/Documents/kiosk-app"
+    node_version: "20.x"
+    electron_version: "22.3.27"
+
+  tasks:
+    - name: Install curl
+      apt:
+        name: curl
+        state: present
+        update_cache: yes
+
+    - name: Add NodeSource APT key and repository for Node.js {{ node_version }}
+      shell: curl -fsSL https://deb.nodesource.com/setup_{{ node_version }} | bash -
+      args:
+        creates: /etc/apt/sources.list.d/nodesource.list
+
+    - name: Install Node.js and npm
+      apt:
+        name: nodejs
+        state: present
+        update_cache: yes
+
+    - name: Ensure Documents directory exists
+      file:
+        path: "/home/{{ username }}/Documents"
+        state: directory
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: '0755'
+
+    - name: Copy kiosk-app folder to Raspberry Pi
+      copy:
+        src: /home/{{ username }}/Documents/kiosk-app/
+        dest: "{{ app_dir }}"
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: '0755'
+
+    - name: Ensure kiosk-app directory has correct permissions
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: "{{ username }}"
+        group: "{{ username }}"
+        mode: '0755'
+        recurse: yes
+
+    - name: Remove existing package-lock.json if it exists
+      file:
+        path: "{{ app_dir }}/package-lock.json"
+        state: absent
+      become: no
+
+    - name: Install Electron with specific version in kiosk-app directory
+      command: npm install electron@{{ electron_version }} --save-dev
+      args:
+        chdir: "{{ app_dir }}"
+      become: no
+
+    - name: Install npm dependencies (if package.json has others)
+      command: npm install
+      args:
+        chdir: "{{ app_dir }}"
+      become: no
+
+    - name: Set up cron job to start kiosk app after reboot
+      cron:
+        name: "Start Kiosk App after reboot"
+        special_time: reboot
+        job: "sleep 10 && DISPLAY=:0 /usr/bin/npm start --prefix {{ app_dir }} > {{ app_dir }}/kiosk.log 2>&1 &"
+        user: "{{ username }}"
+        state: present

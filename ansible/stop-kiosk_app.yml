@@ -1,0 +1,12 @@
+---
+- name: Stop Kiosk App on Raspberry Pi
+  hosts: all
+  become: no # Als Benutzer ausführen
+  vars:
+    username: "username"  # Ersetzen Sie durch den tatsächlichen Benutzernamen
+    app_dir: "/home/{{ username }}/Documents/kiosk-app"
+
+  tasks:
+    - name: Stop the kiosk app
+      shell: "pkill -f 'electron .'"
+      ignore_errors: yes # Ignoriert Fehler, falls kein Prozess läuft

@@ -1,0 +1,8 @@
+---
+- name: Linux Reboot
+  hosts: all
+  gather_facts: False
+  become: yes
+  tasks:
+    - name: reboot server
+      command: reboot

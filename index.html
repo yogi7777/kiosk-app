@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kiosk App</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      background: black;
+    }
+    #webview-container {
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+    webview {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="webview-container">
+    <webview id="webview"></webview>
+  </div>
+
+  <script>
+    // URLs mit individuellen Anzeigezeiten (in Millisekunden)
+    const urlConfig = [
+      { url: 'https://url.dom', duration: 30000 }, // 30 Sekunden
+      { url: 'https://url.dom', duration: 30000, timeRestricted: { start: '11:30', end: '13:00' } }, // 30 Sekunden, nur 11:30-13:00
+      { url: 'https://url.dom', duration: 30000 } // 30 Sekunden
+    ];
+
+    let currentIndex = 0;
+    const webview = document.getElementById('webview');
+    let timeoutId = null;
+
+    // Funktion zum Prüfen, ob die aktuelle Zeit im Zeitfenster liegt
+    function isWithinTimeRange(startTime, endTime) {
+      const now = new Date();
+      const currentHours = now.getHours();
+      const currentMinutes = now.getMinutes();
+      const currentTime = currentHours * 60 + currentMinutes;
+
+      const [startHours, startMinutes] = startTime.split(':').map(Number);
+      const [endHours, endMinutes] = endTime.split(':').map(Number);
+      const start = startHours * 60 + startMinutes;
+      const end = endHours * 60 + endMinutes;
+
+      return currentTime >= start && currentTime <= end;
+    }
+
+    // Funktion zum Laden der nächsten Seite
+    function loadWebsite() {
+      // Vorherigen Timer löschen, falls vorhanden
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+
+      // Finde die nächste gültige URL
+      let config = urlConfig[currentIndex];
+      while (config.timeRestricted && !isWithinTimeRange(config.timeRestricted.start, config.timeRestricted.end)) {
+        currentIndex = (currentIndex + 1) % urlConfig.length;
+        config = urlConfig[currentIndex];
+      }
+
+      // Lade die Seite
+      console.log(`Loading ${config.url} for ${config.duration / 30000} seconds`);
+      webview.src = config.url;
+
+      // Plane den nächsten Wechsel
+      timeoutId = setTimeout(() => {
+        currentIndex = (currentIndex + 1) % urlConfig.length;
+        loadWebsite();
+      }, config.duration);
+    }
+
+    // Fehlerhandling
+    webview.addEventListener('did-fail-load', (e) => {
+      console.error(`Failed to load ${webview.src}: ${e.errorDescription}`);
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        currentIndex = (currentIndex + 1) % urlConfig.length;
+        loadWebsite();
+      }, 30000);
+    });
+
+    // Erstes Laden
+    loadWebsite();
+  </script>
+</body>
+</html>
