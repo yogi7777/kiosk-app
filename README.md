@@ -1,4 +1,4 @@
-# Schlanke Electron App mit Kiosk Funktion für Raspberry PI
+# Schlanke Electron App mit Karusell Kiosk Funktion für Raspberry PI
 
 ## Voraussetzungen
 - Electron
@@ -6,7 +6,7 @@
 - nodejs mindest version 20.x
 
 ## Was kann das Script
-- So viele URLs anzeigen wie du willst
+- So viele URLs im Karusell Modus anzeigen wie du willst
 - Sekunden definieren, wie lange ein Webseite angezeigt werden soll.
 - Es können zusätzlich Start und Endzeit angegeben werden, falls eine URL nur zwischen einer definierten Uhrzeit angezeigt werden soll.
 - Es lädt die Webseiten **OHNE** IFRAME. Immer mit reload.
