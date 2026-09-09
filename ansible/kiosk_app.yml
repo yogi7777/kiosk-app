@@ -6,7 +6,7 @@
     username: "username"  # Replace with the actual username
     app_dir: "/home/{{ username }}/Documents/kiosk-app"
     node_version: "20.x"
-    electron_version: "22.3.27"
+    electron_version: "40.10.3"
 
   tasks:
     - name: Install curl
