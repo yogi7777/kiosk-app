@@ -5,8 +5,7 @@
   "scripts": {
     "start": "electron ."
   },
-  "dependencies": {},
   "devDependencies": {
-    "electron": "latest"
+    "electron": "40.10.3"
   }
 }
